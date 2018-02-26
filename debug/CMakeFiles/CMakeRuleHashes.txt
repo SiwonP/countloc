@@ -1,2 +1,0 @@
-# Hashes of file build rules.
-a9b07a9ac233275ad7993e9d045efafb lex.c
