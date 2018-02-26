@@ -105,6 +105,7 @@ void open_directories(char *dir_path, int indent)
                 open_directories(argv[1], 0);
             }
 
+            //TODO: print the number of files
             printf("lines: %d\n", lines);
             clock_t end = clock();
             float sec = (float)(end - start) / CLOCKS_PER_SEC;
