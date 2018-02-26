@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <dirent.h>
 int strings = 0;
+int files = 0;
+int total_files = 0;
 int lines = 0;
 void open_directories(char *dir_path, int indent);
 %}
@@ -51,7 +53,9 @@ void open_directories(char *dir_path, int indent)
          * is not a directory, apply the lex and print its name
          */
         if (content->d_type != DT_DIR) {
+            total_files++;
             if (content->d_name[0] != '.') {
+                files++;
                 printf("%*s%s\n",indent,"", content->d_name);
                 stat(path, s); 
                 //printf("%hu\n", indent, "", s->st_mode); 
@@ -107,6 +111,9 @@ void open_directories(char *dir_path, int indent)
 
             //TODO: print the number of files
             printf("lines: %d\n", lines);
+            printf("files: %d\n", files);
+            printf("ignored files: %d\n", total_files - files);
+            printf("total files: %d\n", total_files);
             clock_t end = clock();
             float sec = (float)(end - start) / CLOCKS_PER_SEC;
             printf("Success in %f seconds\n", sec);
