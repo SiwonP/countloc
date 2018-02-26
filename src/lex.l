@@ -6,11 +6,19 @@
 #include <time.h>
 #include <stdio.h>
 #include <dirent.h>
+
+#define EXTENT "c", "cpp", "cc", "h", "hpp" ,"java", "py", "js"
+
 int strings = 0;
 int files = 0;
 int total_files = 0;
 int lines = 0;
 void open_directories(char *dir_path, int indent);
+
+char *extensions[] = { EXTENT };
+
+#define NUM_EXTENT sizeof(extensions)/sizeof(extensions[0])
+
 %}
 
 %option noyywrap
@@ -24,6 +32,23 @@ NUMBER [0-9].*[0-9]*
 
 %%
 typedef struct dirent dirent;
+
+char *get_extension(char *string)
+{
+    char *delim = ".";
+    char str[128];
+    strcpy(str, string);
+    char *token = {0};
+    char *last = {0};
+
+    token = strtok(str, delim);
+    while(token != NULL) {
+        last = token;
+        token = strtok(NULL, delim);
+    }
+
+    return last;
+}
 
 /**
  * Function that open and print every file 
@@ -56,7 +81,9 @@ void open_directories(char *dir_path, int indent)
             total_files++;
             if (content->d_name[0] != '.') {
                 files++;
-                printf("%*s%s\n",indent,"", content->d_name);
+                char *extension = get_extension(content->d_name);
+                printf("%*s%s extension : %s\n",indent,"", content->d_name,
+                extension);
                 stat(path, s); 
                 //printf("%hu\n", indent, "", s->st_mode); 
                 yyin = fopen(path, "r");
@@ -121,5 +148,8 @@ void open_directories(char *dir_path, int indent)
         } else {
             printf("Usage : countloc <file>\n");
         }
+
+        printf("%zu\n", NUM_EXTENT);
+        int test[NUM_EXTENT] = { 0 };
         return 0;
     }
