@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <dirent.h>
 
-#define EXTENT "c", "cpp", "cc", "h", "hpp" ,"java", "py", "js"
+#define EXTENT "txt", "c", "cpp", "cc", "h", "hpp" ,"java", "py", "js", "xml",\
+"json", "markdown", "md"
 
 int strings = 0;
 int files = 0;
@@ -17,8 +18,11 @@ void open_directories(char *dir_path, int indent);
 
 char *extensions[] = { EXTENT };
 
+
 #define NUM_EXTENT sizeof(extensions)/sizeof(extensions[0])
 
+int extensions_count[NUM_EXTENT] = { 0 };
+int extensions_count_lines[NUM_EXTENT] = { 0 };
 %}
 
 %option noyywrap
@@ -32,6 +36,28 @@ NUMBER [0-9].*[0-9]*
 
 %%
 typedef struct dirent dirent;
+
+void print_result()
+{
+    printf("Language\t\tFiles\n");
+    for (int i = 0; i < NUM_EXTENT; i++) {
+        if (extensions_count[i] != 0) {
+            printf("%s\t\t%d\n", extensions[i], extensions_count[i]);
+        }
+    }
+}
+
+int check_extension(char *ext)
+{
+    int res = 0;
+
+    for (int i = 0; i < NUM_EXTENT; i++) {
+        if ( strcmp(extensions[i], ext) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 char *get_extension(char *string)
 {
@@ -48,6 +74,17 @@ char *get_extension(char *string)
     }
 
     return last;
+}
+
+int count_extension(char *ext, int files)
+{
+    int n = check_extension(ext);
+
+    if ( n > -1 ) {
+        extensions_count[n]++;
+        files++;
+    }
+    return files;
 }
 
 /**
@@ -80,10 +117,11 @@ void open_directories(char *dir_path, int indent)
         if (content->d_type != DT_DIR) {
             total_files++;
             if (content->d_name[0] != '.') {
-                files++;
+                //files++;
                 char *extension = get_extension(content->d_name);
-                printf("%*s%s extension : %s\n",indent,"", content->d_name,
-                extension);
+                files = count_extension(extension, files);
+                //printf("%*s%s extension : %s, %d\n",indent,"", content->d_name,
+                        //extension, check_extension(extension));
                 stat(path, s); 
                 //printf("%hu\n", indent, "", s->st_mode); 
                 yyin = fopen(path, "r");
@@ -91,65 +129,66 @@ void open_directories(char *dir_path, int indent)
                 fclose(yyin);
             }
 
-        /**
-         * else repeat the function recursively but still print
-         * the directory name
-         */
+            /**
+             * else repeat the function recursively but still print
+             * the directory name
+             */
         } else {
             if (content->d_name[0] != '.') {
-                printf("%*s%s :\n",indent, "", content->d_name);
+                //printf("%*s%s :\n",indent, "", content->d_name);
                 open_directories(path, indent+4);
             }
         }
-        }
-
-        closedir(dir);
     }
 
-    int main(int argc, char *argv[])
-    {
+    closedir(dir);
+}
+
+int main(int argc, char *argv[])
+{
+    /**
+     * Requires at least 1 argument to work.
+     * only the first will be taken into account
+     */
+
+    //TODO: take into account more than 1 argument
+
+    if (argc > 1) {
+        clock_t start = clock();
+
+        DIR *dir = opendir(argv[1]);
+        DIR *sub;
+
         /**
-         * Requires at least 1 argument to work.
-         * only the first will be taken into account
+         * if the argument is a fill, run the lexer on this file
          */
-        //TODO: take into account more than 1 argument
-
-        if (argc > 1) {
-            clock_t start = clock();
-
-            DIR *dir = opendir(argv[1]);
-            DIR *sub;
-
-            /**
-             * if the argument is a fill, run the lexer on this file
-             */
-            if (dir == NULL) {
-                yyin = fopen(argv[1], "r");
-                yylex();
-                fclose(yyin);
+        if (dir == NULL) {
+            yyin = fopen(argv[1], "r");
+            yylex();
+            fclose(yyin);
 
             /**
              * Else run the open_directories recursive function
              */
-            } else {
-
-                open_directories(argv[1], 0);
-            }
-
-            //TODO: print the number of files
-            printf("lines: %d\n", lines);
-            printf("files: %d\n", files);
-            printf("ignored files: %d\n", total_files - files);
-            printf("total files: %d\n", total_files);
-            clock_t end = clock();
-            float sec = (float)(end - start) / CLOCKS_PER_SEC;
-            printf("Success in %f seconds\n", sec);
-
         } else {
-            printf("Usage : countloc <file>\n");
+
+            open_directories(argv[1], 0);
         }
 
-        printf("%zu\n", NUM_EXTENT);
-        int test[NUM_EXTENT] = { 0 };
-        return 0;
+        //TODO: print the number of files
+        printf("lines: %d\n", lines);
+        printf("files: %d\n", files);
+        printf("ignored files: %d\n", total_files - files);
+        printf("total files: %d\n", total_files);
+        clock_t end = clock();
+        float sec = (float)(end - start) / CLOCKS_PER_SEC;
+        printf("Success in %f seconds\n", sec);
+
+        print_result();
+
+    } else {
+        printf("Usage : countloc <file>\n");
     }
+
+    return 1;
+}
