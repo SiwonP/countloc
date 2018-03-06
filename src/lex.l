@@ -39,7 +39,7 @@ typedef struct dirent dirent;
 
 void print_result()
 {
-    printf("Language\t\tFiles\n");
+    printf("Language\tFiles\t\tLines\n");
     for (int i = 0; i < NUM_EXTENT; i++) {
         if (extensions_count[i] != 0) {
             printf("%s\t\t%d\n", extensions[i], extensions_count[i]);
@@ -175,7 +175,6 @@ int main(int argc, char *argv[])
             open_directories(argv[1], 0);
         }
 
-        //TODO: print the number of files
         printf("lines: %d\n", lines);
         printf("files: %d\n", files);
         printf("ignored files: %d\n", total_files - files);
@@ -183,6 +182,7 @@ int main(int argc, char *argv[])
         clock_t end = clock();
         float sec = (float)(end - start) / CLOCKS_PER_SEC;
         printf("Success in %f seconds\n", sec);
+        printf("\n");
 
         print_result();
 
