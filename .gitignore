@@ -1,3 +1,4 @@
 *.swp
+build
 debug
 .DS_Store
