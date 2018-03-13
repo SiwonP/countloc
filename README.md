@@ -5,6 +5,19 @@ folder
 
 ## Installation and build
 
+For Unix systems
+
+```
+git clone https://www.github.com/SiwonP/countloc
+cd countloc
+mkdir build
+cd build
+cmake ..
+make
+```
+
 ## Usage 
 
+```
 ./countloc <Name of folder/file>
+```
