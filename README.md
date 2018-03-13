@@ -19,5 +19,5 @@ make
 ## Usage 
 
 ```
-./countloc <Name of folder/file>
+./countloc <Path to folder/file>
 ```
